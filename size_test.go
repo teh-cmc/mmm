@@ -150,8 +150,17 @@ func TestSize_SizeOf_float32(t *testing.T) {
 	}
 }
 
-//var f32 float32
-//var f64 float64
+func TestSize_SizeOf_float64(t *testing.T) {
+	var v float64
+	size, err := SizeOf(v)
+	if err != nil {
+		t.Error(err)
+	}
+	if size != unsafe.Sizeof(v) {
+		t.Error("invalid size for float64")
+	}
+}
+
 //var c64 complex64
 //var c128 complex128
 //var iarr [42]int
