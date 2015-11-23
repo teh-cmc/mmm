@@ -216,8 +216,17 @@ func TestSize_SizeOf_int_map(t *testing.T) {
 	}
 }
 
-//var imap map[int]int
-//var iptr *int
+func TestSize_SizeOf_int_pointer(t *testing.T) {
+	var v *int
+	_, err := SizeOf(v)
+	if err == nil {
+		t.Error("should not be supported")
+		if _, ok := err.(Error); !ok {
+			t.Error("should have mmm.Error")
+		}
+	}
+}
+
 //var islice []int
 //var str string
 //var srt struct{}
