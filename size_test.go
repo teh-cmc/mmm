@@ -249,6 +249,15 @@ func TestSize_SizeOf_string(t *testing.T) {
 	}
 }
 
-//var srt struct{}
+func TestSize_SizeOf_struct(t *testing.T) {
+	var v struct{}
+	_, err := SizeOf(v)
+	if err == nil {
+		t.Error("should not be supported")
+		if _, ok := err.(Error); !ok {
+			t.Error("should have mmm.Error")
+		}
+	}
+}
 
 //var itf interface{}
