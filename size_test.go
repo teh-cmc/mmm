@@ -128,7 +128,17 @@ func TestSize_SizeOf_uint64(t *testing.T) {
 	}
 }
 
-//var uiptr uintptr
+func TestSize_SizeOf_uintptr(t *testing.T) {
+	var v uintptr
+	size, err := SizeOf(v)
+	if err != nil {
+		t.Error(err)
+	}
+	if size != unsafe.Sizeof(v) {
+		t.Error("invalid size for uintptr")
+	}
+}
+
 //var f32 float32
 //var f64 float64
 //var c64 complex64
