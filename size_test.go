@@ -194,6 +194,17 @@ func TestSize_SizeOf_int_array(t *testing.T) {
 	}
 }
 
+func TestSize_SizeOf_int_chan(t *testing.T) {
+	var v chan int
+	_, err := SizeOf(v)
+	if err == nil {
+		t.Error("should not be supported")
+		if _, ok := err.(Error); !ok {
+			t.Error("should have mmm.Error")
+		}
+	}
+}
+
 //var ichan chan int
 //var itf interface{}
 //var imap map[int]int
