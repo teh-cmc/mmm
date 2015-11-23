@@ -106,7 +106,17 @@ func TestSize_SizeOf_uint16(t *testing.T) {
 	}
 }
 
-//var ui32 uint32
+func TestSize_SizeOf_uint32(t *testing.T) {
+	var v uint32
+	size, err := SizeOf(v)
+	if err != nil {
+		t.Error(err)
+	}
+	if size != unsafe.Sizeof(v) {
+		t.Error("invalid size for uint32")
+	}
+}
+
 //var ui64 uint64
 //var uiptr uintptr
 //var f32 float32
