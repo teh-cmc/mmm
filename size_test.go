@@ -238,8 +238,17 @@ func TestSize_SizeOf_int_slice(t *testing.T) {
 	}
 }
 
-//var islice []int
-//var str string
+func TestSize_SizeOf_string(t *testing.T) {
+	var v string
+	_, err := SizeOf(v)
+	if err == nil {
+		t.Error("should not be supported")
+		if _, ok := err.(Error); !ok {
+			t.Error("should have mmm.Error")
+		}
+	}
+}
+
 //var srt struct{}
 
 //var itf interface{}
