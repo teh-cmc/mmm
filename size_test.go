@@ -25,11 +25,21 @@ func TestSize_SizeOf_int(t *testing.T) {
 		t.Error(err)
 	}
 	if size != unsafe.Sizeof(v) {
-		t.Error("invalid size for bool")
+		t.Error("invalid size for int")
 	}
 }
 
-//var i8 int8
+func TestSize_SizeOf_int8(t *testing.T) {
+	var v int8
+	size, err := SizeOf(v)
+	if err != nil {
+		t.Error(err)
+	}
+	if size != unsafe.Sizeof(v) {
+		t.Error("invalid size for int8")
+	}
+}
+
 //var i16 int16
 //var i32 int32
 //var i64 int64
