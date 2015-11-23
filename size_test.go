@@ -172,8 +172,17 @@ func TestSize_SizeOf_complex64(t *testing.T) {
 	}
 }
 
-//var c64 complex64
-//var c128 complex128
+func TestSize_SizeOf_complex128(t *testing.T) {
+	var v complex128
+	size, err := SizeOf(v)
+	if err != nil {
+		t.Error(err)
+	}
+	if size != unsafe.Sizeof(v) {
+		t.Error("invalid size for complex128")
+	}
+}
+
 //var iarr [42]int
 //var ichan chan int
 //var itf interface{}
