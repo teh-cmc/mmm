@@ -73,6 +73,17 @@ func TestSize_SizeOf_int64(t *testing.T) {
 	}
 }
 
+func TestSize_SizeOf_uint(t *testing.T) {
+	var v uint
+	size, err := SizeOf(v)
+	if err != nil {
+		t.Error(err)
+	}
+	if size != unsafe.Sizeof(v) {
+		t.Error("invalid size for uint")
+	}
+}
+
 //var ui uint
 //var ui8 uint8
 //var ui16 uint16
