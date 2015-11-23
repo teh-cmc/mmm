@@ -56,7 +56,7 @@ func (mc *MemChunk) Delete() error {
 // NewMemChunk returns a new memory chunk.
 //
 // `v`'s memory representation will be used as a template for the newly
-// allocated memory. All pointers will be flattened.
+// allocated memory. All pointers will be flattened. All data will be copied.
 // `n` is the number of `v`-like objects the memory chunk can contain (i.e.,
 // sizeof(chunk) = sizeof(v) * n).
 func NewMemChunk(v interface{}, n uint) (MemChunk, error) {
@@ -78,7 +78,11 @@ func NewMemChunk(v interface{}, n uint) (MemChunk, error) {
 		return MemChunk{}, err
 	}
 
-	// write bytes
+	for i := uint(0); i < n; i++ {
+		if err := BytesOf(v, bytes[i*uint(size):]); err != nil {
+			return MemChunk{}, err
+		}
+	}
 
 	return MemChunk{
 		chunkSize: size * uintptr(n),
