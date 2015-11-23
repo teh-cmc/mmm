@@ -183,7 +183,17 @@ func TestSize_SizeOf_complex128(t *testing.T) {
 	}
 }
 
-//var iarr [42]int
+func TestSize_SizeOf_int_array(t *testing.T) {
+	var v [42]int
+	size, err := SizeOf(v)
+	if err != nil {
+		t.Error(err)
+	}
+	if size != unsafe.Sizeof(v) {
+		t.Error("invalid size for [42]int")
+	}
+}
+
 //var ichan chan int
 //var itf interface{}
 //var imap map[int]int
