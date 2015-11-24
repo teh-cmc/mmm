@@ -265,3 +265,22 @@ func TestBytes_BytesOf_array_int_64(t *testing.T) {
 		t.Error("invalid bytes for [64]int")
 	}
 }
+
+func TestBytes_BytesOf_array_int_312(t *testing.T) {
+	var v [312]int
+	for i := range v {
+		v[i] = i
+	}
+
+	size := unsafe.Sizeof(v)
+	bytes := make([]byte, size)
+
+	if err := BytesOf(v, bytes); err != nil {
+		t.Error(err)
+	}
+
+	rv := *((*[312]int)(unsafe.Pointer(&(bytes[0]))))
+	if v != rv {
+		t.Error("invalid bytes for [312]int")
+	}
+}
