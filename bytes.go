@@ -10,8 +10,8 @@ import (
 
 // BytesOf copies the in-memory representation of `v` in `bytes`.
 //
-// Only numeric, array, struct, pointer types and any combination of the above
-// are supported.
+// Only numeric, array, struct types and any combination of the above are
+// supported.
 func BytesOf(v interface{}, bytes []byte) error {
 	return bytesOf(v, bytes)
 }
@@ -56,8 +56,6 @@ func bytesOf(v interface{}, bytes []byte) error {
 		return bytesOfArrayType(v, bytes)
 	case reflect.Struct:
 		return bytesOfStructType(v, bytes)
-	case reflect.Ptr:
-		return bytesOfPointerType(v, bytes)
 	default:
 		return Error(fmt.Sprintf("unsuppported type: %#v", k.String()))
 	}
@@ -106,8 +104,4 @@ func bytesOfArrayType(v interface{}, bytes []byte) error {
 
 func bytesOfStructType(v interface{}, bytes []byte) error {
 	return bytesOfArrayType(v, bytes)
-}
-
-func bytesOfPointerType(v interface{}, bytes []byte) error {
-	return bytesOfNumericType(v, bytes)
 }
