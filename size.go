@@ -53,6 +53,12 @@ func sizeOf(v interface{}) (uintptr, error) {
 		total += t.Size()
 	case reflect.Array:
 		total += t.Size()
+	case reflect.Struct:
+		s, err := sizeOfStructType(v)
+		if err != nil {
+			return 0, err
+		}
+		total += s
 	case reflect.Chan:
 		return 0, Error(fmt.Sprintf("type not supported (yet?): %s", k))
 	case reflect.Func:
@@ -67,8 +73,6 @@ func sizeOf(v interface{}) (uintptr, error) {
 		return 0, Error(fmt.Sprintf("type not supported (yet?): %s", k))
 	case reflect.String:
 		return 0, Error(fmt.Sprintf("type not supported (yet?): %s", k))
-	case reflect.Struct:
-		return 0, Error(fmt.Sprintf("type not supported (yet?): %s", k))
 	case reflect.UnsafePointer:
 		return 0, Error(fmt.Sprintf("type not supported (yet?): %s", k))
 	default:
@@ -76,4 +80,21 @@ func sizeOf(v interface{}) (uintptr, error) {
 	}
 
 	return total, nil
+}
+
+func sizeOfStructType(v interface{}) (uintptr, error) {
+	rv := reflect.ValueOf(v)
+	size := rv.Type().Size()
+	nbFields := rv.NumField()
+	for i := 0; i < nbFields; i++ {
+		if f := rv.Field(i); f.Type().Kind() == reflect.Ptr && !f.IsNil() && f.CanSet() {
+			s, err := sizeOf(f.Elem().Interface())
+			if err != nil {
+				return 0, err
+			}
+			size += s
+		}
+	}
+
+	return size, nil
 }
