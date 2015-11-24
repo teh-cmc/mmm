@@ -19,69 +19,37 @@ func bytesOf(v interface{}, bytes []byte) error {
 	k := t.Kind()
 	switch k {
 	case reflect.Bool:
-		rv := v.(bool)
-		b := *((*[unsafe.Sizeof(rv)]byte)(unsafe.Pointer(&rv)))
-		copy(bytes, b[:])
+		return bytesOfNumericType(v, bytes)
 	case reflect.Int:
-		rv := v.(int)
-		b := *((*[unsafe.Sizeof(rv)]byte)(unsafe.Pointer(&rv)))
-		copy(bytes, b[:])
+		return bytesOfNumericType(v, bytes)
 	case reflect.Int8:
-		rv := v.(int8)
-		b := *((*[unsafe.Sizeof(rv)]byte)(unsafe.Pointer(&rv)))
-		copy(bytes, b[:])
+		return bytesOfNumericType(v, bytes)
 	case reflect.Int16:
-		rv := v.(int16)
-		b := *((*[unsafe.Sizeof(rv)]byte)(unsafe.Pointer(&rv)))
-		copy(bytes, b[:])
+		return bytesOfNumericType(v, bytes)
 	case reflect.Int32:
-		rv := v.(int32)
-		b := *((*[unsafe.Sizeof(rv)]byte)(unsafe.Pointer(&rv)))
-		copy(bytes, b[:])
+		return bytesOfNumericType(v, bytes)
 	case reflect.Int64:
-		rv := v.(int64)
-		b := *((*[unsafe.Sizeof(rv)]byte)(unsafe.Pointer(&rv)))
-		copy(bytes, b[:])
+		return bytesOfNumericType(v, bytes)
 	case reflect.Uint:
-		rv := v.(uint)
-		b := *((*[unsafe.Sizeof(rv)]byte)(unsafe.Pointer(&rv)))
-		copy(bytes, b[:])
+		return bytesOfNumericType(v, bytes)
 	case reflect.Uint8:
-		rv := v.(uint8)
-		b := *((*[unsafe.Sizeof(rv)]byte)(unsafe.Pointer(&rv)))
-		copy(bytes, b[:])
+		return bytesOfNumericType(v, bytes)
 	case reflect.Uint16:
-		rv := v.(uint16)
-		b := *((*[unsafe.Sizeof(rv)]byte)(unsafe.Pointer(&rv)))
-		copy(bytes, b[:])
+		return bytesOfNumericType(v, bytes)
 	case reflect.Uint32:
-		rv := v.(uint32)
-		b := *((*[unsafe.Sizeof(rv)]byte)(unsafe.Pointer(&rv)))
-		copy(bytes, b[:])
+		return bytesOfNumericType(v, bytes)
 	case reflect.Uint64:
-		rv := v.(uint64)
-		b := *((*[unsafe.Sizeof(rv)]byte)(unsafe.Pointer(&rv)))
-		copy(bytes, b[:])
+		return bytesOfNumericType(v, bytes)
 	case reflect.Uintptr:
-		rv := v.(uintptr)
-		b := *((*[unsafe.Sizeof(rv)]byte)(unsafe.Pointer(&rv)))
-		copy(bytes, b[:])
+		return bytesOfNumericType(v, bytes)
 	case reflect.Float32:
-		rv := v.(float32)
-		b := *((*[unsafe.Sizeof(rv)]byte)(unsafe.Pointer(&rv)))
-		copy(bytes, b[:])
+		return bytesOfNumericType(v, bytes)
 	case reflect.Float64:
-		rv := v.(float64)
-		b := *((*[unsafe.Sizeof(rv)]byte)(unsafe.Pointer(&rv)))
-		copy(bytes, b[:])
+		return bytesOfNumericType(v, bytes)
 	case reflect.Complex64:
-		rv := v.(complex64)
-		b := *((*[unsafe.Sizeof(rv)]byte)(unsafe.Pointer(&rv)))
-		copy(bytes, b[:])
+		return bytesOfNumericType(v, bytes)
 	case reflect.Complex128:
-		rv := v.(complex128)
-		b := *((*[unsafe.Sizeof(rv)]byte)(unsafe.Pointer(&rv)))
-		copy(bytes, b[:])
+		return bytesOfNumericType(v, bytes)
 	case reflect.Array:
 		return Error(fmt.Sprintf("type not supported (yet?): %s", k))
 	case reflect.Chan:
@@ -105,6 +73,15 @@ func bytesOf(v interface{}, bytes []byte) error {
 	default:
 		return Error(fmt.Sprintf("`v` is not sizable (?): %#v", v))
 	}
+
+	return nil
+}
+
+func bytesOfNumericType(v interface{}, bytes []byte) error {
+	vbytes := *((*[unsafe.Sizeof(v)]byte)(unsafe.Pointer(&v)))
+	vuintptr := *(*uintptr)(unsafe.Pointer(&(vbytes[unsafe.Sizeof(v)-unsafe.Sizeof(uintptr(0))])))
+	vvalue := *((*[16]byte)(unsafe.Pointer(vuintptr)))
+	copy(bytes, vvalue[:reflect.ValueOf(v).Type().Size()])
 
 	return nil
 }

@@ -259,5 +259,3 @@ func TestSize_SizeOf_struct(t *testing.T) {
 		}
 	}
 }
-
-//var itf interface{}
