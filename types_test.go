@@ -1,6 +1,9 @@
 package mmm
 
-import "testing"
+import (
+	"testing"
+	"unsafe"
+)
 
 // -----------------------------------------------------------------------------
 
@@ -170,45 +173,54 @@ func TestTypes_TypesOf(tt *testing.T) {
 		tt.Error("wrong type")
 	}
 
+	var up unsafe.Pointer
+	t, err = TypeOf(up)
+	if err != nil {
+		tt.Error(err)
+	}
+	if t != TypeUnsafePointer {
+		tt.Error("wrong type")
+	}
+
 	var ic chan int
 	t, err = TypeOf(ic)
 	if err == nil || t != TypeInvalid {
-		tt.Error("wrong type")
+		tt.Error("illegal type")
 	}
 
 	var fn func()
 	t, err = TypeOf(fn)
 	if err == nil || t != TypeInvalid {
-		tt.Error("wrong type")
+		tt.Error("illegal type")
 	}
 
 	var itf interface{}
 	t, err = TypeOf(itf)
 	if err == nil || t != TypeInvalid {
-		tt.Error("wrong type")
+		tt.Error("illegal type")
 	}
 
 	var im map[int]int
 	t, err = TypeOf(im)
 	if err == nil || t != TypeInvalid {
-		tt.Error("wrong type")
+		tt.Error("illegal type")
 	}
 
 	var ip *int
 	t, err = TypeOf(ip)
 	if err == nil || t != TypeInvalid {
-		tt.Error("wrong type")
+		tt.Error("illegal type")
 	}
 
 	var is []int
 	t, err = TypeOf(is)
 	if err == nil || t != TypeInvalid {
-		tt.Error("wrong type")
+		tt.Error("illegal type")
 	}
 
 	var str string
 	t, err = TypeOf(str)
 	if err == nil || t != TypeInvalid {
-		tt.Error("wrong type")
+		tt.Error("illegal type")
 	}
 }
