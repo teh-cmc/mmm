@@ -71,7 +71,7 @@ func bytesOf(v interface{}, bytes []byte) error {
 	case reflect.UnsafePointer:
 		return Error(fmt.Sprintf("type not supported (yet?): %s", k))
 	default:
-		return Error(fmt.Sprintf("`v` is not sizable (?): %#v", v))
+		return Error(fmt.Sprintf("`v` is not representable (?): %#v", v))
 	}
 
 	return nil
