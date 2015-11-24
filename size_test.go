@@ -194,6 +194,21 @@ func TestSize_SizeOf_int_array(t *testing.T) {
 	}
 }
 
+func TestSize_SizeOf_struct_noptr(t *testing.T) {
+	v := struct {
+		a, b complex128
+		c    int8
+		z    [13]bool
+	}{}
+	size, err := SizeOf(v)
+	if err != nil {
+		t.Error(err)
+	}
+	if size != unsafe.Sizeof(v) {
+		t.Error("invalid size for struct")
+	}
+}
+
 func TestSize_SizeOf_int_chan(t *testing.T) {
 	var v chan int
 	_, err := SizeOf(v)
@@ -240,17 +255,6 @@ func TestSize_SizeOf_int_slice(t *testing.T) {
 
 func TestSize_SizeOf_string(t *testing.T) {
 	var v string
-	_, err := SizeOf(v)
-	if err == nil {
-		t.Error("should not be supported")
-		if _, ok := err.(Error); !ok {
-			t.Error("should have mmm.Error")
-		}
-	}
-}
-
-func TestSize_SizeOf_struct(t *testing.T) {
-	var v struct{}
 	_, err := SizeOf(v)
 	if err == nil {
 		t.Error("should not be supported")
