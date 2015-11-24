@@ -28,6 +28,8 @@ func bytesOf(v interface{}, bytes []byte) error {
 		return bytesOfArrayType(v, bytes)
 	case TypeStruct:
 		return bytesOfStructType(v, bytes)
+	case TypeUnsafePointer:
+		// do nothing
 	}
 
 	return nil
