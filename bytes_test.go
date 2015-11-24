@@ -201,3 +201,18 @@ func TestBytes_BytesOf_float32(t *testing.T) {
 		t.Error("invalid bytes for float32")
 	}
 }
+
+func TestBytes_BytesOf_float64(t *testing.T) {
+	var v float64 = 42.7
+	size := unsafe.Sizeof(v)
+	bytes := make([]byte, size)
+
+	if err := BytesOf(v, bytes); err != nil {
+		t.Error(err)
+	}
+
+	rv := *((*float64)(unsafe.Pointer(&(bytes[0]))))
+	if v != rv {
+		t.Error("invalid bytes for float64")
+	}
+}
