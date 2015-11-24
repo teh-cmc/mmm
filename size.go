@@ -8,7 +8,7 @@ import (
 // -----------------------------------------------------------------------------
 
 // SizeOf returns the real size of `v` in memory, including the content of its
-// pointers.
+// pointers (i.e. they are flattened).
 func SizeOf(v interface{}) (uintptr, error) {
 	return sizeOf(v)
 }

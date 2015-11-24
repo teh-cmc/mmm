@@ -9,7 +9,7 @@ import (
 // -----------------------------------------------------------------------------
 
 // BytesOf writes the in-memory representation of `v` in `bytes`, including the
-// content of its pointers.
+// content of its pointers (i.e. they are flattened).
 func BytesOf(v interface{}, bytes []byte) error {
 	return bytesOf(v, bytes)
 }
