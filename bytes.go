@@ -8,8 +8,10 @@ import (
 
 // -----------------------------------------------------------------------------
 
-// BytesOf writes the in-memory representation of `v` in `bytes`, including the
-// content of its pointers (i.e. they are flattened).
+// BytesOf copies the in-memory representation of `v` in `bytes`.
+//
+// Only numeric, array, struct, pointer types and any combination of the above
+// are supported.
 func BytesOf(v interface{}, bytes []byte) error {
 	return bytesOf(v, bytes)
 }
@@ -52,48 +54,44 @@ func bytesOf(v interface{}, bytes []byte) error {
 		return bytesOfNumericType(v, bytes)
 	case reflect.Array:
 		return bytesOfArrayType(v, bytes)
-	case reflect.Chan:
-		return Error(fmt.Sprintf("type not supported (yet?): %s", k))
-	case reflect.Func:
-		return Error(fmt.Sprintf("type not supported (yet?): %s", k))
-	case reflect.Interface:
-		return Error(fmt.Sprintf("type not supported (yet?): %s", k))
-	case reflect.Map:
-		return Error(fmt.Sprintf("type not supported (yet?): %s", k))
-	case reflect.Ptr:
-		return Error(fmt.Sprintf("type not supported (yet?): %s", k))
-	case reflect.Slice:
-		return Error(fmt.Sprintf("type not supported (yet?): %s", k))
-	case reflect.String:
-		return Error(fmt.Sprintf("type not supported (yet?): %s", k))
 	case reflect.Struct:
-		return Error(fmt.Sprintf("type not supported (yet?): %s", k))
-	case reflect.UnsafePointer:
-		return Error(fmt.Sprintf("type not supported (yet?): %s", k))
+		return bytesOfStructType(v, bytes)
+	case reflect.Ptr:
+		return bytesOfPointerType(v, bytes)
 	default:
-		return Error(fmt.Sprintf("`v` is not representable (?): %#v", v))
+		return Error(fmt.Sprintf("unsuppported type: %#v", k.String()))
 	}
 
 	return nil
 }
 
-func bytesOfNumericType(v interface{}, bytes []byte) error {
+// -----------------------------------------------------------------------------
+
+func extractDataAddress(v interface{}) uintptr {
+	// extract data address from the interface
 	vbytes := *((*[unsafe.Sizeof(v)]byte)(unsafe.Pointer(&v)))
 	vuintptr := *(*uintptr)(unsafe.Pointer(&(vbytes[unsafe.Sizeof(v)-unsafe.Sizeof(uintptr(0))])))
-	// numeric type can't take more than 16 bytes (seriously it can't, right..?)
-	vvalue := *((*[16]byte)(unsafe.Pointer(vuintptr)))
+
+	return vuintptr
+}
+
+func bytesOfNumericType(v interface{}, bytes []byte) error {
+	// interpret data as a contiguous array of 16 bytes
+	vvalue := *((*[16]byte)(unsafe.Pointer(extractDataAddress(v))))
+	// copy data byte-representation to `bytes`
 	copy(bytes, vvalue[:reflect.ValueOf(v).Type().Size()])
 
 	return nil
 }
 
 func bytesOfArrayType(v interface{}, bytes []byte) error {
-	vbytes := *((*[unsafe.Sizeof(v)]byte)(unsafe.Pointer(&v)))
-	vuintptr := *(*uintptr)(unsafe.Pointer(&(vbytes[unsafe.Sizeof(v)-unsafe.Sizeof(uintptr(0))])))
-
+	vuintptr := extractDataAddress(v)
 	size := reflect.ValueOf(v).Type().Size()
+	// loop until there are no more data chunks
 	for i := uintptr(0); size > 0; i += 128 {
+		// interpret data as a contiguous array of 128 bytes
 		vvalue := *((*[128]byte)(unsafe.Pointer(vuintptr + i)))
+		// copy data byte-representation to `bytes`
 		if size > 128 {
 			copy(bytes[i:], vvalue[:128])
 			size -= 128
@@ -104,4 +102,12 @@ func bytesOfArrayType(v interface{}, bytes []byte) error {
 	}
 
 	return nil
+}
+
+func bytesOfStructType(v interface{}, bytes []byte) error {
+	return bytesOfArrayType(v, bytes)
+}
+
+func bytesOfPointerType(v interface{}, bytes []byte) error {
+	return bytesOfNumericType(v, bytes)
 }
