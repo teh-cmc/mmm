@@ -53,6 +53,10 @@ func bytesOfNumericType(v interface{}, bytes []byte) error {
 }
 
 func bytesOfArrayType(v interface{}, bytes []byte) error {
+	if err := TypeCheck(v); err != nil {
+		return err
+	}
+
 	vuintptr := extractDataAddress(v)
 	size := reflect.ValueOf(v).Type().Size()
 	// loop until there are no more data chunks
