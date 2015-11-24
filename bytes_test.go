@@ -33,6 +33,21 @@ func TestBytes_BytesOf_int(t *testing.T) {
 
 	rv := *((*int)(unsafe.Pointer(&(bytes[0]))))
 	if v != rv {
-		t.Error("invalid bytes for bool")
+		t.Error("invalid bytes for int")
+	}
+}
+
+func TestBytes_BytesOf_int8(t *testing.T) {
+	var v int8 = 42
+	size := unsafe.Sizeof(v)
+	bytes := make([]byte, size)
+
+	if err := BytesOf(v, bytes); err != nil {
+		t.Error(err)
+	}
+
+	rv := *((*int8)(unsafe.Pointer(&(bytes[0]))))
+	if v != rv {
+		t.Error("invalid bytes for int8")
 	}
 }
