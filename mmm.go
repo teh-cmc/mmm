@@ -64,11 +64,7 @@ func NewMemChunk(v interface{}, n uint) (MemChunk, error) {
 		return MemChunk{}, Error("`n` must be > 0")
 	}
 
-	size, err := SizeOf(v)
-	if err != nil {
-		return MemChunk{}, err
-	}
-
+	size := unsafe.Sizeof(v)
 	bytes, err := syscall.Mmap(
 		0, 0, int(size*uintptr(n)),
 		syscall.PROT_READ|syscall.PROT_WRITE,
