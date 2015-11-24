@@ -156,3 +156,18 @@ func TestBytes_BytesOf_uint32(t *testing.T) {
 		t.Error("invalid bytes for uint32")
 	}
 }
+
+func TestBytes_BytesOf_uint64(t *testing.T) {
+	var v uint64 = 42
+	size := unsafe.Sizeof(v)
+	bytes := make([]byte, size)
+
+	if err := BytesOf(v, bytes); err != nil {
+		t.Error(err)
+	}
+
+	rv := *((*uint64)(unsafe.Pointer(&(bytes[0]))))
+	if v != rv {
+		t.Error("invalid bytes for uint64")
+	}
+}
