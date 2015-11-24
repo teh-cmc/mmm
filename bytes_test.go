@@ -305,3 +305,24 @@ func TestBytes_BytesOf_array_int_array_27_518(t *testing.T) {
 		t.Error("invalid bytes for [27][518]int")
 	}
 }
+
+func TestBytes_BytesOf_struct_small(t *testing.T) {
+	type small struct {
+		a, b complex128
+		c    int8
+		z    [13]bool
+	}
+	v := small{a: 66.6, b: 42.7, c: 3, z: [13]bool{true}}
+
+	size := unsafe.Sizeof(v)
+	bytes := make([]byte, size)
+
+	if err := BytesOf(v, bytes); err != nil {
+		t.Error(err)
+	}
+
+	rv := *((*small)(unsafe.Pointer(&(bytes[0]))))
+	if v != rv {
+		t.Error("invalid bytes for struct{small}")
+	}
+}
