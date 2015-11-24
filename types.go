@@ -25,11 +25,15 @@ const (
 
 // TypeOf returns the underlying type of an interface.
 func TypeOf(v interface{}) (Type, error) {
-	t := reflect.TypeOf(v)
-	if t == nil {
+	return typeOf(reflect.ValueOf(v))
+}
+
+func typeOf(v reflect.Value) (Type, error) {
+	if !v.IsValid() {
 		return TypeInvalid, Error(fmt.Sprintf("unsuppported type: %#v", v))
 	}
-	k := t.Kind()
+
+	k := v.Type().Kind()
 
 	switch k {
 	case reflect.Bool:
@@ -78,21 +82,23 @@ func TypeOf(v interface{}) (Type, error) {
 // TypeCheck recursively checks the underlying types of `v` and returns an error
 // if one or more of those types are illegal.
 func TypeCheck(v interface{}) error {
-	t, err := TypeOf(v)
+	return typeCheck(reflect.ValueOf(v))
+}
+
+func typeCheck(v reflect.Value) error {
+	t, err := typeOf(v)
 	if err != nil {
 		return nil
 	}
 
-	rv := reflect.ValueOf(v)
-
-	if t == TypeArray && rv.Len() > 0 {
-		return TypeCheck(rv.Index(0).Interface())
+	if t == TypeArray && v.Len() > 0 {
+		return TypeCheck(v.Index(0).Interface())
 	}
 
 	if t == TypeStruct {
-		fields := rv.NumField()
+		fields := v.NumField()
 		for i := 0; i < fields; i++ {
-			if err := TypeCheck(rv.Field(i).Interface()); err != nil {
+			if err := TypeCheck(v.Field(i).Interface()); err != nil {
 				return err
 			}
 		}
