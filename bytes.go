@@ -1,7 +1,6 @@
 package mmm
 
 import (
-	"fmt"
 	"reflect"
 	"unsafe"
 )
@@ -17,47 +16,18 @@ func BytesOf(v interface{}, bytes []byte) error {
 }
 
 func bytesOf(v interface{}, bytes []byte) error {
-	t := reflect.TypeOf(v)
-	k := t.Kind()
-	switch k {
-	case reflect.Bool:
+	t, err := TypeOf(v)
+	if err != nil {
+		return err
+	}
+
+	switch t {
+	case TypeNumeric:
 		return bytesOfNumericType(v, bytes)
-	case reflect.Int:
-		return bytesOfNumericType(v, bytes)
-	case reflect.Int8:
-		return bytesOfNumericType(v, bytes)
-	case reflect.Int16:
-		return bytesOfNumericType(v, bytes)
-	case reflect.Int32:
-		return bytesOfNumericType(v, bytes)
-	case reflect.Int64:
-		return bytesOfNumericType(v, bytes)
-	case reflect.Uint:
-		return bytesOfNumericType(v, bytes)
-	case reflect.Uint8:
-		return bytesOfNumericType(v, bytes)
-	case reflect.Uint16:
-		return bytesOfNumericType(v, bytes)
-	case reflect.Uint32:
-		return bytesOfNumericType(v, bytes)
-	case reflect.Uint64:
-		return bytesOfNumericType(v, bytes)
-	case reflect.Uintptr:
-		return bytesOfNumericType(v, bytes)
-	case reflect.Float32:
-		return bytesOfNumericType(v, bytes)
-	case reflect.Float64:
-		return bytesOfNumericType(v, bytes)
-	case reflect.Complex64:
-		return bytesOfNumericType(v, bytes)
-	case reflect.Complex128:
-		return bytesOfNumericType(v, bytes)
-	case reflect.Array:
+	case TypeArray:
 		return bytesOfArrayType(v, bytes)
-	case reflect.Struct:
+	case TypeStruct:
 		return bytesOfStructType(v, bytes)
-	default:
-		return Error(fmt.Sprintf("unsuppported type: %#v", k.String()))
 	}
 
 	return nil
