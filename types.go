@@ -19,6 +19,8 @@ const (
 	TypeArray Type = iota
 	// TypeStruct is any struct.
 	TypeStruct Type = iota
+	// TypeUnsafePointer is any pointer from the unsafe package.
+	TypeUnsafePointer Type = iota
 )
 
 // TypeOf returns the underlying type of an interface.
@@ -66,6 +68,8 @@ func TypeOf(v interface{}) (Type, error) {
 		return TypeArray, nil
 	case reflect.Struct:
 		return TypeStruct, nil
+	case reflect.UnsafePointer:
+		return TypeUnsafePointer, nil
 	default:
 		return TypeInvalid, Error(fmt.Sprintf("unsuppported type: %#v", k.String()))
 	}
