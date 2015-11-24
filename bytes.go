@@ -51,7 +51,7 @@ func bytesOf(v interface{}, bytes []byte) error {
 	case reflect.Complex128:
 		return bytesOfNumericType(v, bytes)
 	case reflect.Array:
-		return Error(fmt.Sprintf("type not supported (yet?): %s", k))
+		return bytesOfArrayType(v, bytes)
 	case reflect.Chan:
 		return Error(fmt.Sprintf("type not supported (yet?): %s", k))
 	case reflect.Func:
@@ -80,8 +80,28 @@ func bytesOf(v interface{}, bytes []byte) error {
 func bytesOfNumericType(v interface{}, bytes []byte) error {
 	vbytes := *((*[unsafe.Sizeof(v)]byte)(unsafe.Pointer(&v)))
 	vuintptr := *(*uintptr)(unsafe.Pointer(&(vbytes[unsafe.Sizeof(v)-unsafe.Sizeof(uintptr(0))])))
+	// numeric type can't take more than 16 bytes (seriously it can't, right..?)
 	vvalue := *((*[16]byte)(unsafe.Pointer(vuintptr)))
 	copy(bytes, vvalue[:reflect.ValueOf(v).Type().Size()])
+
+	return nil
+}
+
+func bytesOfArrayType(v interface{}, bytes []byte) error {
+	vbytes := *((*[unsafe.Sizeof(v)]byte)(unsafe.Pointer(&v)))
+	vuintptr := *(*uintptr)(unsafe.Pointer(&(vbytes[unsafe.Sizeof(v)-unsafe.Sizeof(uintptr(0))])))
+
+	size := reflect.ValueOf(v).Type().Size()
+	for i := uintptr(0); size > 0; i += 128 {
+		vvalue := *((*[128]byte)(unsafe.Pointer(vuintptr + i)))
+		if size > 128 {
+			copy(bytes[i:], vvalue[:128])
+			size -= 128
+		} else {
+			copy(bytes[i:], vvalue[:size])
+			size = 0
+		}
+	}
 
 	return nil
 }
