@@ -231,3 +231,18 @@ func TestBytes_BytesOf_complex64(t *testing.T) {
 		t.Error("invalid bytes for complex64")
 	}
 }
+
+func TestBytes_BytesOf_complex128(t *testing.T) {
+	var v complex128 = 42.7
+	size := unsafe.Sizeof(v)
+	bytes := make([]byte, size)
+
+	if err := BytesOf(v, bytes); err != nil {
+		t.Error(err)
+	}
+
+	rv := *((*complex128)(unsafe.Pointer(&(bytes[0]))))
+	if v != rv {
+		t.Error("invalid bytes for complex128")
+	}
+}
