@@ -23,7 +23,12 @@ const (
 
 // TypeOf returns the underlying type of an interface.
 func TypeOf(v interface{}) (Type, error) {
-	k := reflect.TypeOf(v).Kind()
+	t := reflect.TypeOf(v)
+	if t == nil {
+		return TypeInvalid, Error(fmt.Sprintf("unsuppported type: %#v", v))
+	}
+	k := t.Kind()
+
 	switch k {
 	case reflect.Bool:
 		return TypeNumeric, nil
