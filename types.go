@@ -92,13 +92,13 @@ func typeCheck(v reflect.Value) error {
 	}
 
 	if t == TypeArray && v.Len() > 0 {
-		return TypeCheck(v.Index(0).Interface())
+		return typeCheck(v.Index(0))
 	}
 
 	if t == TypeStruct {
 		fields := v.NumField()
 		for i := 0; i < fields; i++ {
-			if err := TypeCheck(v.Field(i).Interface()); err != nil {
+			if err := typeCheck(v.Field(i)); err != nil {
 				return err
 			}
 		}
