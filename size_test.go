@@ -209,6 +209,21 @@ func TestSize_SizeOf_struct_noptr(t *testing.T) {
 	}
 }
 
+func TestSize_SizeOf_struct_ptr_nil(t *testing.T) {
+	v := struct {
+		a, b complex128
+		c    int8
+		z    [13]bool
+	}{}
+	size, err := SizeOf(v)
+	if err != nil {
+		t.Error(err)
+	}
+	if size != unsafe.Sizeof(v) {
+		t.Error("invalid size for struct")
+	}
+}
+
 func TestSize_SizeOf_int_chan(t *testing.T) {
 	var v chan int
 	_, err := SizeOf(v)

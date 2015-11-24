@@ -326,3 +326,26 @@ func TestBytes_BytesOf_struct_small(t *testing.T) {
 		t.Error("invalid bytes for struct{small}")
 	}
 }
+
+func TestBytes_BytesOf_struct_big(t *testing.T) {
+	type big struct {
+		a, b complex128
+		g    [53][128]struct{ x *int }
+		c    int8
+		x    [999]*big
+		z    [13]bool
+	}
+	v := big{a: 66.6, b: 42.7, c: 3, z: [13]bool{true}}
+
+	size := unsafe.Sizeof(v)
+	bytes := make([]byte, size)
+
+	if err := BytesOf(v, bytes); err != nil {
+		t.Error(err)
+	}
+
+	rv := *((*big)(unsafe.Pointer(&(bytes[0]))))
+	if v != rv {
+		t.Error("invalid bytes for struct{big}")
+	}
+}
