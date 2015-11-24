@@ -70,3 +70,29 @@ func TypeOf(v interface{}) (Type, error) {
 		return TypeInvalid, Error(fmt.Sprintf("unsuppported type: %#v", k.String()))
 	}
 }
+
+// TypeCheck recursively checks the underlying types of `v` and returns an error
+// if one or more of those types are illegal.
+func TypeCheck(v interface{}) error {
+	t, err := TypeOf(v)
+	if err != nil {
+		return nil
+	}
+
+	rv := reflect.ValueOf(v)
+
+	if t == TypeArray && rv.Len() > 0 {
+		return TypeCheck(rv.Index(0).Interface())
+	}
+
+	if t == TypeStruct {
+		fields := rv.NumField()
+		for i := 0; i < fields; i++ {
+			if err := TypeCheck(rv.Field(i).Interface()); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
