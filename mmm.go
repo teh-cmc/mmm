@@ -34,6 +34,8 @@ func (mc MemChunk) NbObjects() uint {
 	return uint(mc.chunkSize / mc.objSize)
 }
 
+// -----------------------------------------------------------------------------
+
 // Read returns the i-th object of the chunk as an interface.
 //
 // This will panic if `i` is out of bounds.
@@ -62,20 +64,6 @@ func (mc MemChunk) Read(i int) interface{} {
 	}
 
 	return itf
-}
-
-// Delete frees the memory chunk.
-func (mc *MemChunk) Delete() error {
-	err := syscall.Munmap(mc.bytes)
-	if err != nil {
-		return err
-	}
-
-	mc.chunkSize = 0
-	mc.objSize = 1
-	mc.bytes = nil
-
-	return nil
 }
 
 // -----------------------------------------------------------------------------
@@ -116,6 +104,22 @@ func NewMemChunk(v interface{}, n uint) (MemChunk, error) {
 		bytes:     bytes,
 	}, nil
 }
+
+// Delete frees the memory chunk.
+func (mc *MemChunk) Delete() error {
+	err := syscall.Munmap(mc.bytes)
+	if err != nil {
+		return err
+	}
+
+	mc.chunkSize = 0
+	mc.objSize = 1
+	mc.bytes = nil
+
+	return nil
+}
+
+// -----------------------------------------------------------------------------
 
 // Endianness returns the byte order.
 func Endianness() binary.ByteOrder {
