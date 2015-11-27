@@ -117,11 +117,10 @@ pointers only when something's asking for some data.` + "\n")
 	fmt.Println("Case C: what happens when we store all the generated pointers?\n")
 
 	// build 10 million unsafe pointers on the managed heap
-	ptrs := make([]*int, 10*1e6)
+	ptrs := make([]unsafe.Pointer, 10*1e6)
 	// init those pointers so that they point to the unmanaged heap
 	for i := range ptrs {
-		ii := intz.Read(i).(int)
-		ptrs[i] = &(ii)
+		ptrs[i] = unsafe.Pointer(intz.Pointer(i))
 	}
 
 	// get rid of (almost all) previous garbage
@@ -166,7 +165,7 @@ What happens if we store all the generated pointers as numeric references?` + "\
 	refs := make([]uintptr, 10*1e6)
 	// init those references so that they "point" to the unmanaged heap
 	for i := range refs {
-		refs[i] = uintptr(unsafe.Pointer(ptrs[i]))
+		refs[i] = uintptr(ptrs[i])
 	}
 
 	// get rid of (almost all) previous garbage
