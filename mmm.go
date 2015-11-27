@@ -34,18 +34,22 @@ func (mc MemChunk) NbObjects() uint {
 	return uint(mc.chunkSize / mc.objSize)
 }
 
-// Index returns the i-th object of the chunk as an interface.
+// Read returns the i-th object of the chunk as an interface.
 //
 // This will panic if `i` is out of bounds.
-func (mc MemChunk) Index(i int) interface{} {
-	itf := mc.itf
+func (mc MemChunk) Read(i int) interface{} {
+	// build a zero interface similar to the original one
+	itf := reflect.Zero(reflect.ValueOf(mc.itf).Type()).Interface()
+	// get a pointer to the memory representation of the new interface
 	itfBytes := ((*[unsafe.Sizeof(itf)]byte)(unsafe.Pointer(&itf)))
-
-	dataPtr := uintptr(unsafe.Pointer(&(mc.bytes[uintptr(i)*mc.objSize])))
-
+	// ignore the bytes of the interface that correspond to the data
 	ptrSize := unsafe.Sizeof(uintptr(0))
 	itfLen := uintptr(len(itfBytes)) - ptrSize
 
+	// get a pointer to the data bytes corresponding to index `i`
+	dataPtr := uintptr(unsafe.Pointer(&(mc.bytes[uintptr(i)*mc.objSize])))
+
+	// replace the data bytes of the interface with the data at index `i`
 	switch ptrSize {
 	case unsafe.Sizeof(uint8(0)):
 		itfBytes[itfLen] = byte(dataPtr)
@@ -107,12 +111,13 @@ func NewMemChunk(v interface{}, n uint) (MemChunk, error) {
 		chunkSize: size * uintptr(n),
 		objSize:   size,
 
-		itf:       reflect.ValueOf(v).Interface(),
+		itf:       v,
 		byteOrder: Endianness(),
 		bytes:     bytes,
 	}, nil
 }
 
+// Endianness returns the byte order.
 func Endianness() binary.ByteOrder {
 	var byteOrder binary.ByteOrder = binary.LittleEndian
 	var i int = 0x1
