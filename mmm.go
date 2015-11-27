@@ -85,6 +85,16 @@ func (mc *MemChunk) Write(i int, v interface{}) interface{} {
 	return v
 }
 
+// Pointer returns pointer the i-th object of the chunk.
+// It returns uintptr instead of unsafe.Pointer so that code using mmm
+// cannot obtain unsafe.Pointers without importing the unsafe package
+// explicitly.
+//
+// This will panic if `i` is out of bounds.
+func (mc MemChunk) Pointer(i int) uintptr {
+	return uintptr(unsafe.Pointer(&(mc.bytes[uintptr(i)*mc.objSize])))
+}
+
 // -----------------------------------------------------------------------------
 
 // NewMemChunk returns a new memory chunk.
