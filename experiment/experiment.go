@@ -16,6 +16,9 @@ import (
 /////
 // This file shows various ways of using mmm's MemChunk's and how they affect
 // GC's performances compared to native Go pointers.
+//
+//   go run experiment.go
+//
 /////
 
 func main() {
