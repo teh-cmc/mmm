@@ -1,6 +1,7 @@
 package mmm
 
 import (
+	"encoding/binary"
 	"reflect"
 	"syscall"
 	"unsafe"
@@ -23,7 +24,9 @@ type MemChunk struct {
 	chunkSize uintptr
 	objSize   uintptr
 
-	bytes []byte
+	itf       interface{}
+	byteOrder binary.ByteOrder
+	bytes     []byte
 }
 
 // NbObjects returns the number of objects in the chunk.
@@ -31,11 +34,30 @@ func (mc MemChunk) NbObjects() uint {
 	return uint(mc.chunkSize / mc.objSize)
 }
 
-// Index returns the i-th object of the chunk as an unsafe pointer.
+// Index returns the i-th object of the chunk as an interface.
 //
 // This will panic if `i` is out of bounds.
-func (mc MemChunk) Index(i int) unsafe.Pointer {
-	return unsafe.Pointer(&(mc.bytes[uintptr(i)*mc.objSize]))
+func (mc MemChunk) Index(i int) interface{} {
+	itf := mc.itf
+	itfBytes := ((*[unsafe.Sizeof(itf)]byte)(unsafe.Pointer(&itf)))
+
+	dataPtr := uintptr(unsafe.Pointer(&(mc.bytes[uintptr(i)*mc.objSize])))
+
+	ptrSize := unsafe.Sizeof(uintptr(0))
+	itfLen := uintptr(len(itfBytes)) - ptrSize
+
+	switch ptrSize {
+	case unsafe.Sizeof(uint8(0)):
+		itfBytes[itfLen] = byte(dataPtr)
+	case unsafe.Sizeof(uint16(0)):
+		mc.byteOrder.PutUint16(itfBytes[itfLen:], uint16(dataPtr))
+	case unsafe.Sizeof(uint32(0)):
+		mc.byteOrder.PutUint32(itfBytes[itfLen:], uint32(dataPtr))
+	case unsafe.Sizeof(uint64(0)):
+		mc.byteOrder.PutUint64(itfBytes[itfLen:], uint64(dataPtr))
+	}
+
+	return itf
 }
 
 // Delete frees the memory chunk.
@@ -84,6 +106,19 @@ func NewMemChunk(v interface{}, n uint) (MemChunk, error) {
 	return MemChunk{
 		chunkSize: size * uintptr(n),
 		objSize:   size,
+
+		itf:       reflect.ValueOf(v).Interface(),
+		byteOrder: Endianness(),
 		bytes:     bytes,
 	}, nil
+}
+
+func Endianness() binary.ByteOrder {
+	var byteOrder binary.ByteOrder = binary.LittleEndian
+	var i int = 0x1
+	if ((*[unsafe.Sizeof(uintptr(0))]byte)(unsafe.Pointer(&i)))[0] == 0 {
+		byteOrder = binary.BigEndian
+	}
+
+	return byteOrder
 }
