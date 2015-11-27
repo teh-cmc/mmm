@@ -78,7 +78,7 @@ pointers only when something's asking for some data.` + "\n")
 	}
 	// init our integers
 	for i := 0; i < int(intz.NbObjects()); i++ {
-		*(*int)(intz.Index(i)) = i
+		intz.Write(i, i)
 	}
 
 	// get rid of (almost all) previous garbage
@@ -89,7 +89,7 @@ pointers only when something's asking for some data.` + "\n")
 	for i := 0; i < 5; i++ {
 		// randomly print one of our integers to make sure it's all working
 		// as expected (pointer to data is generated on-the-fly)
-		fmt.Printf("\tvalue @ index %d: %d\n", i*1e4, *(*int)(intz.Index(i * 1e4)))
+		fmt.Printf("\tvalue @ index %d: %d\n", i*1e4, intz.Read(i*1e4))
 
 		// run GC
 		now := time.Now().UnixNano()
@@ -117,10 +117,11 @@ pointers only when something's asking for some data.` + "\n")
 	fmt.Println("Case C: what happens when we store all the generated pointers?\n")
 
 	// build 10 million unsafe pointers on the managed heap
-	ptrs := make([]unsafe.Pointer, 10*1e6)
+	ptrs := make([]*int, 10*1e6)
 	// init those pointers so that they point to the unmanaged heap
 	for i := range ptrs {
-		ptrs[i] = intz.Index(i)
+		ii := intz.Read(i).(int)
+		ptrs[i] = &(ii)
 	}
 
 	// get rid of (almost all) previous garbage
@@ -165,7 +166,7 @@ What happens if we store all the generated pointers as numeric references?` + "\
 	refs := make([]uintptr, 10*1e6)
 	// init those references so that they "point" to the unmanaged heap
 	for i := range refs {
-		refs[i] = uintptr(ptrs[i])
+		refs[i] = uintptr(unsafe.Pointer(ptrs[i]))
 	}
 
 	// get rid of (almost all) previous garbage
