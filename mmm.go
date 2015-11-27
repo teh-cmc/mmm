@@ -66,6 +66,25 @@ func (mc MemChunk) Read(i int) interface{} {
 	return itf
 }
 
+// Write writes the passed value the i-th object of the chunk.
+//
+// It returns the passed value.
+//
+// This will panic if `i` is out of bounds, or if `v` is of a different type than
+// the other objects in the chunk. Or if anything went wrong.
+func (mc *MemChunk) Write(i int, v interface{}) interface{} {
+	// panic if `v` is of a different type
+	if reflect.TypeOf(v) != reflect.TypeOf(mc.itf) {
+		panic("illegal value")
+	}
+	// copies `v`'s byte representation to index `i`
+	if err := BytesOf(v, mc.bytes[uintptr(i)*mc.objSize:]); err != nil {
+		panic(err)
+	}
+
+	return v
+}
+
 // -----------------------------------------------------------------------------
 
 // NewMemChunk returns a new memory chunk.
