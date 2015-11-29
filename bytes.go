@@ -12,10 +12,15 @@ import (
 
 // -----------------------------------------------------------------------------
 
-// BytesOf copies the in-memory representation of `v` in `bytes`.
+// BytesOf copies the in-memory representation of `v` into `bytes`.
 //
-// Only numeric, array, struct types and any combination of the above are
-// supported.
+// Supported types:
+// interfaces,
+// arrays,
+// structs,
+// numerics and boolean (bool/int/uint/float/complex and their variants),
+// unsafe.Pointer,
+// and any possible combination of the above.
 func BytesOf(v interface{}, bytes []byte) error {
 	return bytesOf(v, bytes)
 }

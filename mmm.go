@@ -71,7 +71,7 @@ func (mc MemChunk) Read(i int) interface{} {
 	return itf
 }
 
-// Write writes the passed value the i-th object of the chunk.
+// Write writes the passed value to the i-th object of the chunk.
 //
 // It returns the passed value.
 //
@@ -90,7 +90,8 @@ func (mc *MemChunk) Write(i int, v interface{}) interface{} {
 	return v
 }
 
-// Pointer returns pointer the i-th object of the chunk.
+// Pointer returns a pointer to the i-th object of the chunk.
+//
 // It returns uintptr instead of unsafe.Pointer so that code using mmm
 // cannot obtain unsafe.Pointers without importing the unsafe package
 // explicitly.
@@ -104,8 +105,16 @@ func (mc MemChunk) Pointer(i int) uintptr {
 
 // NewMemChunk returns a new memory chunk.
 //
+// Supported types:
+// interfaces,
+// arrays,
+// structs,
+// numerics and boolean (bool/int/uint/float/complex and their variants),
+// unsafe.Pointer,
+// and any possible combination of the above.
+//
 // `v`'s memory representation will be used as a template for the newly
-// allocated memory. All pointers will be flattened. All data will be copied.
+// allocated memory. All data will be copied.
 // `n` is the number of `v`-like objects the memory chunk can contain (i.e.,
 // sizeof(chunk) = sizeof(v) * n).
 func NewMemChunk(v interface{}, n uint) (MemChunk, error) {
@@ -155,7 +164,7 @@ func (mc *MemChunk) Delete() error {
 
 // -----------------------------------------------------------------------------
 
-// Endianness returns the byte order.
+// Endianness returns the byte order of the current architecture.
 func Endianness() binary.ByteOrder {
 	var byteOrder binary.ByteOrder = binary.LittleEndian
 	var i int = 0x1
