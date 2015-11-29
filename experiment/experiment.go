@@ -19,8 +19,11 @@ import (
 // -----------------------------------------------------------------------------
 
 /////
-// This file shows various ways of using mmm's MemChunk's and how they affect
+// This file shows various ways of using mmm's MemChunks and these ways affect
 // GC's performances compared to native Go pointers.
+//
+// All of the results shown below were computed using a DELL XPS 15-9530
+// (i7-4712HQ@2.30GHz).
 //
 //   go run experiment.go
 //
@@ -76,8 +79,8 @@ on the managed heap?` + "\n")
 	//////////////////////////////////////////////////////
 	fmt.Println(`Case B: mmm doesn't store any pointer, it doesn't need to.
 Since the data is stored on an unmanaged heap, it cannot be collected
-even if there's no reference to it. This allows mmm to generate the
-pointers only when something's asking for some data.` + "\n")
+even if there's no reference to it. This allows mmm to generate
+pointers only when something's actually reading or writing to the data.` + "\n")
 
 	// build 10 million integers on an unmanaged heap
 	intz, err := mmm.NewMemChunk(int(0), 10*1e6)
@@ -122,7 +125,7 @@ pointers only when something's asking for some data.` + "\n")
 	///////////////////////////////////////////////////////
 	// C: Unmanaged heap, storing all generated pointers //
 	///////////////////////////////////////////////////////
-	fmt.Println("Case C: what happens when we store all the generated pointers?\n")
+	fmt.Println("Case C: what happens when we build and store 10 million pointers for each and every integer in our unmanaged memory chunk?\n")
 
 	// build 10 million unsafe pointers on the managed heap
 	ptrs := make([]unsafe.Pointer, 10*1e6)
@@ -163,15 +166,13 @@ pointers only when something's asking for some data.` + "\n")
 	///////////////////////////////////////////////////
 	// D: Unmanaged heap, storing numeric references //
 	///////////////////////////////////////////////////
-	fmt.Println(`Case D: as case C showed, storing all the generated pointers to the
-unmanaged heap is still order of magnitudes faster than storing pointers
-to the managed heap.
+	fmt.Println(`Case D: as case C showed, storing all the generated unsafe pointers to the unmanaged heap is still order of magnitudes faster than storing safe pointers to the managed heap.
 Still, why keep pointer values when our data is not garbage-collectable?
 What happens if we store all the generated pointers as numeric references?` + "\n")
 
 	// build 10 million numeric references on the managed heap
 	refs := make([]uintptr, 10*1e6)
-	// init those references so that they "point" to the unmanaged heap
+	// init those references so that they each contain one of the addresses
 	for i := range refs {
 		refs[i] = uintptr(ptrs[i])
 	}
