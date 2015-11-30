@@ -13,7 +13,7 @@ This has been talked about numerous times on the [go-nuts mailing list](https://
 
 To make it short: **unless you are absolutely certain that you have no better alternative and that you understand all of the tradeoffs involved, please do not use this library.**
 
-`mmm` is no black magic: it simply allocates memory segments outside of the GC-managed heap and provides a simple API (`Read()`, `Write()`, `Pointer()`) that abstracts away all of the evil stuff acually going on behind the scenes.
+`mmm` is no black magic: it simply allocates memory segments outside of the GC-managed heap and provides a simple API (`Read()`, `Write()`, `Pointer()`) that abstracts away all of the evil stuff actually going on behind the scenes.
 
 **The performances of Go's garbage collector depend heavily on the number of pointers your software is using.**
 *No matter how much performance you gain by using `mmm`, you could have had the same gains had you redesigned your software to avoid the use of pointers entirely.*
