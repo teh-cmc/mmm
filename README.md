@@ -4,7 +4,9 @@ Manual memory management for golang.
 
 Have a look at [FreeTree]() for a real-world example of how to use `mmm`.
 
-## What you should know
+## What you should definitely know..
+
+## ..before using `mmm`
 
 Go doesn't provide any manual memory management primitives. [**For very good reasons**]().
 This has been talked about numerous times on the [go-nuts mailing list](), have a look over there for detailed discussions.
@@ -21,6 +23,16 @@ This is the raison d'etre of `mmm`: in some cases, purposefully (re)designing yo
 Note that `mmm` heavily relies on Go's implementation of interfaces.
 
 Finally, for the adventurous, you can find most the ugly stuff [here]() and [here]().
+
+## ..once you've decided to use `mmm`
+
+- Never point to data on the GC-managed heap using a pointer stored on an unmanaged heap
+
+If the only references to your garbage-collectable data are stored in an unmanaged memory chunk, and thus non-existent to the eyes of the GC, your data will be automatically deallocated, as it should be.
+
+-`mmm` provides support for the following types: interfaces, arrays, structs, numerics + boolean (bool/int/uint/float/complex and their variants), unsafe.Pointer, and any possible combination of the above.
+
+Slices and strings are thus not supported, use arrays and byte arrays instead.
 
 ## Install
 
