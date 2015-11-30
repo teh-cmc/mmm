@@ -43,9 +43,12 @@ func (mc MemChunk) NbObjects() uint {
 
 // Read returns the i-th object of the chunk as an interface.
 //
+// mmm doesn't provide synchronization of reads and writes on a MemChunk: it's
+// entirely up to you to decide how you want to manage thread-safety.
+//
 // This will panic if `i` is out of bounds.
 func (mc MemChunk) Read(i int) interface{} {
-	// build a zero interface similar to the original one
+	// build a zero-value interface similar to the original one
 	itf := reflect.Zero(reflect.ValueOf(mc.itf).Type()).Interface()
 	// get a pointer to the memory representation of the new interface
 	itfBytes := ((*[unsafe.Sizeof(itf)]byte)(unsafe.Pointer(&itf)))
@@ -74,6 +77,9 @@ func (mc MemChunk) Read(i int) interface{} {
 // Write writes the passed value to the i-th object of the chunk.
 //
 // It returns the passed value.
+//
+// mmm doesn't provide synchronization of reads and writes on a MemChunk: it's
+// entirely up to you to decide how you want to manage thread-safety.
 //
 // This will panic if `i` is out of bounds, or if `v` is of a different type than
 // the other objects in the chunk. Or if anything went wrong.

@@ -26,13 +26,17 @@ Finally, for the adventurous, you can find most the ugly stuff [here]() and [her
 
 ## ..once you've decided to use `mmm`
 
-- Never point to data on the GC-managed heap using a pointer stored on an unmanaged heap
+- Never point to data on the GC-managed heap using a pointer stored on an unmanaged heap.
 
 If the only references to your garbage-collectable data are stored in an unmanaged memory chunk, and thus non-existent to the eyes of the GC, your data will be automatically deallocated, as it should be.
 
--`mmm` provides support for the following types: interfaces, arrays, structs, numerics + boolean (bool/int/uint/float/complex and their variants), unsafe.Pointer, and any possible combination of the above.
+- `mmm` provides support for the following types: interfaces, arrays, structs, numerics + boolean (bool/int/uint/float/complex and their variants), unsafe.Pointer, and any possible combination of the above.
 
 Slices and strings are thus not supported, use arrays and byte arrays instead.
+
+- `mmm` doesn't provide synchronization of reads and writes on a `MemChunk`.
+
+It's entirely up to you to decide how you want to manage thread-safety.
 
 ## Install
 
