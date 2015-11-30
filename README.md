@@ -2,14 +2,14 @@
 
 Manual memory management for golang.
 
-Have a look at [FreeTree]() for a real-world example of how to use `mmm`.
+Have a look at [FreeTree](https://github.com/teh-cmc/freetree) for a real-world example of how to use `mmm`.
 
 ## What you should definitely know..
 
 ## ..before using `mmm`
 
-Go doesn't provide any manual memory management primitives. [**For very good reasons**]().
-This has been talked about numerous times on the [go-nuts mailing list](), have a look over there for detailed discussions.
+Go doesn't provide any manual memory management primitives. [**For very good reasons**](https://golang.org/doc/faq#garbage_collection).
+This has been talked about numerous times on the [go-nuts mailing list](https://groups.google.com/forum/#!forum/golang-nuts), have a look over there for detailed discussions.
 
 To make it short: **unless you are absolutely certain that you have no better alternative and that you understand all of the tradoffs involved, please do not use this library.**
 
@@ -22,7 +22,7 @@ This is the raison d'etre of `mmm`: in some cases, purposefully (re)designing yo
 
 Note that `mmm` heavily relies on Go's implementation of interfaces.
 
-Finally, for the adventurous, you can find most the ugly stuff [here]() and [here]().
+Finally, for the adventurous, you can find most the ugly stuff [here](https://github.com/teh-cmc/mmm/blob/master/mmm.go#L44-L108) and [here](https://github.com/teh-cmc/mmm/blob/master/bytes.go#L50-L93).
 
 ## ..once you've decided to use `mmm`
 
@@ -291,7 +291,7 @@ As far as the GC is concerned, those pointers don't exist, which translates into
 
 Still, the memory they point to does exist, and is just one cast away from being read from and written to.
 
-We now have everything we need to build pointer-based software without any GC overhead, and without any design modification: this is basically how [FreeTree]() is implemented.
+We now have everything we need to build pointer-based software without any GC overhead, and without any design modification: this is basically how [FreeTree](https://github.com/teh-cmc/freetree) is implemented.
 
 ## License ![License](https://img.shields.io/badge/license-MIT-blue.svg?style=plastic)
 
