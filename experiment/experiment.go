@@ -19,8 +19,8 @@ import (
 // -----------------------------------------------------------------------------
 
 /////
-// This file shows various ways of using mmm's MemChunks and these ways affect
-// GC's performances compared to native Go pointers.
+// This file shows various ways of using mmm's MemChunks and how these ways
+// affect GC's performances compared to native Go pointers.
 //
 // All of the results shown below were computed using a DELL XPS 15-9530
 // (i7-4712HQ@2.30GHz).
@@ -172,7 +172,8 @@ What happens if we store all the generated pointers as numeric references?` + "\
 
 	// build 10 million numeric references on the managed heap
 	refs := make([]uintptr, 10*1e6)
-	// init those references so that they each contain one of the addresses
+	// init those references so that they each contain one of the addresses in
+	// our unmanaged heap
 	for i := range refs {
 		refs[i] = uintptr(ptrs[i])
 	}

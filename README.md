@@ -11,28 +11,28 @@ Have a look at [FreeTree](https://github.com/teh-cmc/freetree) for a real-world 
 Go doesn't provide any manual memory management primitives. [**For very good reasons**](https://golang.org/doc/faq#garbage_collection).
 This has been talked about numerous times on the [go-nuts mailing list](https://groups.google.com/forum/#!forum/golang-nuts), have a look over there for detailed discussions.
 
-To make it short: **unless you are absolutely certain that you have no better alternative and that you understand all of the tradoffs involved, please do not use this library.**
+To make it short: **unless you are absolutely certain that you have no better alternative and that you understand all of the tradeoffs involved, please do not use this library.**
 
-`mmm` is no black magic: it simply allocates memory segments outside of the GC-managed heap and provides a clean and simple API (`Read()`, `Write()`, `Pointer()`) that abstracts away all of the evil stuff that's acually going on behind the scenes.
+`mmm` is no black magic: it simply allocates memory segments outside of the GC-managed heap and provides a simple API (`Read()`, `Write()`, `Pointer()`) that abstracts away all of the evil stuff acually going on behind the scenes.
 
-The performances of Go's garbage collector depend heavily on the number of pointers your software is using.
+**The performances of Go's garbage collector depend heavily on the number of pointers your software is using.**
 *No matter how much performance you gain by using `mmm`, you could have had the same gains had you redesigned your software to avoid the use of pointers entirely.*
 
-This is the raison d'etre of `mmm`: in some cases, purposefully (re)designing your software to avoid the use of pointers actually leads to code that is overly complex, harder to reason about, and thus, harder to maintain. In such cases, `mmm` might allow you to completely eliminate the GC overhead issues in your software while keeping your original design (with minimal changes to your implementation, of course).
+This is the raison d'être of `mmm`: in some cases, purposefully (re)designing your software to avoid the use of pointers actually leads to code that is overly complex, harder to reason about, and thus, harder to maintain. In such cases, `mmm` might allow you to completely eliminate the GC overhead issues in your software, while keeping your original design (with minimal changes to your implementation, of course).
 
 Note that `mmm` heavily relies on Go's implementation of interfaces.
 
-Finally, for the adventurous, you can find most the ugly stuff [here](https://github.com/teh-cmc/mmm/blob/master/mmm.go#L44-L108) and [here](https://github.com/teh-cmc/mmm/blob/master/bytes.go#L50-L93).
+Finally, for the adventurous, you'll find most of the ugly stuff [here](https://github.com/teh-cmc/mmm/blob/master/mmm.go#L44-L108) and [there](https://github.com/teh-cmc/mmm/blob/master/bytes.go#L50-L93).
 
 ## ..once you've decided to use `mmm`
 
 - Never point to data on the GC-managed heap using a pointer stored on an unmanaged heap.
 
-If the only references to your garbage-collectable data are stored in an unmanaged memory chunk, and thus non-existent to the eyes of the GC, your data will be automatically deallocated, as it should be.
+If the only references to your garbage-collectable data are stored in an unmanaged memory chunk, and thus non-existent to the eyes of the GC, your data will be automatically deallocated. As it should be.
 
-- `mmm` provides support for the following types: interfaces, arrays, structs, numerics + boolean (bool/int/uint/float/complex and their variants), unsafe.Pointer, and any possible combination of the above.
+- `mmm` provides support for the following types: interfaces, arrays, structs, numerics/boolean (`bool`/`int`/`uint`/`float`/`complex` and their variants), `unsafe.Pointer`, and any possible combination of the above.
 
-Slices and strings are thus not supported, use arrays and byte arrays instead.
+Slices and `string` are thus not supported, use arrays and byte arrays instead.
 
 - `mmm` doesn't provide synchronization of reads and writes on a `MemChunk`.
 
@@ -197,11 +197,11 @@ That's an average ~0.9ms per GC call.
 
 We went from a ~326ms average to a ~0.9ms average; but the comparison isn't really fair now, is it? In case A we were storing every pointer, here we're simply not storing any.
 
-That leads us to case C, in which we build pointers to each and every integer in our unamanaged heap.
+That leads us to case C, in which we build pointers to each and every integer that's in our unamanaged heap.
 
 #### Case C: unamanaged heap, storing all generated pointers
 
-What happens when we build and store 10 million pointers for each and every integer in our unmanaged memory chunk?
+What happens when we build and store 10 million pointers: one for each and every integer that's in our unmanaged memory chunk?
 
 ```Go
 // build 10 million unsafe pointers on the managed heap
@@ -238,9 +238,9 @@ value @ index 40000: 40000
 GC time (unmanaged heap, all generated pointers stored): 47221 us
 ```
 
-The results here are pretty interesting: on the one hand this is ~47 times slower than case B (in which we used `mmm`'s memory chunks but didn't actually store any pointer) because unsafe pointers require far less work from the GC, but on the other hand this is still 6 times faster than case A (in which we used native pointers).
+The results here are pretty interesting: on the one hand this is ~47 times slower than case B (in which we used `mmm`'s memory chunks but didn't actually store any pointer), but on the other hand this is still 6 times faster than case A (in which we used native pointers) because unsafe pointers require far less work from the GC.
 
-Six times faster is already quite the good deal, but why stop there? As we've already pointed out, `mmm` doesn't need to store references to its data... so, don't.
+Six times faster is already quite the good deal, but why stop there? As we've already pointed out, `mmm` doesn't need to store references to its data... so.. don't.
 
 This is what case D is all about, in which we will convert those pointers into simple numeric references and store them as such.
 
@@ -251,7 +251,8 @@ Instead of storing (unsafe) pointers, let's treat these pointers as what they re
 ```Go
 // build 10 million numeric references on the managed heap
 refs := make([]uintptr, 10*1e6)
-// init those references so that they each contain one of the addresses
+// init those references so that they each contain one of the addresses in
+// our unmanaged heap
 for i := range refs {
 	refs[i] = uintptr(ptrs[i])
 }
