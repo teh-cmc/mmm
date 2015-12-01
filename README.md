@@ -197,9 +197,9 @@ That's an average ~0.9ms per GC call.
 
 We went from a ~326ms average to a ~0.9ms average; but the comparison isn't really fair now, is it? In case A we were storing every pointer, here we're simply not storing any.
 
-That leads us to case C, in which we build pointers to each and every integer that's in our unamanaged heap.
+That leads us to case C, in which we build pointers to each and every integer that's in our unmanaged heap.
 
-#### Case C: unamanaged heap, storing all generated pointers
+#### Case C: unmanaged heap, storing all generated pointers
 
 What happens when we build and store 10 million pointers: one for each and every integer that's in our unmanaged memory chunk?
 
