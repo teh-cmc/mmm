@@ -132,7 +132,7 @@ func NewMemChunk(v interface{}, n uint) (MemChunk, error) {
 	bytes, err := syscall.Mmap(
 		0, 0, int(size*uintptr(n)),
 		syscall.PROT_READ|syscall.PROT_WRITE,
-		syscall.MAP_PRIVATE|syscall.MAP_ANONYMOUS,
+		mmapFlags,
 	)
 	if err != nil {
 		return MemChunk{}, err
