@@ -24,6 +24,8 @@ Note that `mmm` heavily relies on Go's implementation of interfaces.
 
 Finally, for the adventurous, you'll find most of the ugly stuff [here](https://github.com/teh-cmc/mmm/blob/master/mmm.go#L44-L108) and [there](https://github.com/teh-cmc/mmm/blob/master/bytes.go#L50-L93).
 
+UPDATE: this was discussed at length in [this HN thread](https://news.ycombinator.com/item?id=10649059).
+
 ## ..once you've decided to use `mmm`
 
 - Never point to data on the GC-managed heap using a pointer stored on an unmanaged heap.
