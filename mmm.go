@@ -8,6 +8,7 @@ package mmm
 import (
 	"encoding/binary"
 	"reflect"
+	"runtime"
 	"syscall"
 	"unsafe"
 )
@@ -144,14 +145,22 @@ func NewMemChunk(v interface{}, n uint) (MemChunk, error) {
 		}
 	}
 
-	return MemChunk{
+	ret := MemChunk{
 		chunkSize: size * uintptr(n),
 		objSize:   size,
 
 		itf:       v,
 		byteOrder: Endianness(),
 		bytes:     bytes,
-	}, nil
+	}
+
+	runtime.SetFinalizer(&ret, func(chunk *MemChunk) {
+		if chunk.bytes != nil {
+			chunk.Delete()
+		}
+	})
+
+	return ret, nil
 }
 
 // Delete frees the memory chunk.
