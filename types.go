@@ -41,37 +41,10 @@ func typeOf(v reflect.Value) (Type, error) {
 	k := v.Type().Kind()
 
 	switch k {
-	case reflect.Bool:
-		return TypeNumeric, nil
-	case reflect.Int:
-		return TypeNumeric, nil
-	case reflect.Int8:
-		return TypeNumeric, nil
-	case reflect.Int16:
-		return TypeNumeric, nil
-	case reflect.Int32:
-		return TypeNumeric, nil
-	case reflect.Int64:
-		return TypeNumeric, nil
-	case reflect.Uint:
-		return TypeNumeric, nil
-	case reflect.Uint8:
-		return TypeNumeric, nil
-	case reflect.Uint16:
-		return TypeNumeric, nil
-	case reflect.Uint32:
-		return TypeNumeric, nil
-	case reflect.Uint64:
-		return TypeNumeric, nil
-	case reflect.Uintptr:
-		return TypeNumeric, nil
-	case reflect.Float32:
-		return TypeNumeric, nil
-	case reflect.Float64:
-		return TypeNumeric, nil
-	case reflect.Complex64:
-		return TypeNumeric, nil
-	case reflect.Complex128:
+	case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16,
+		reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16,
+		reflect.Uint32, reflect.Uint64, reflect.Uintptr, reflect.Float32,
+		reflect.Float64, reflect.Complex64, reflect.Complex128:
 		return TypeNumeric, nil
 	case reflect.Array:
 		return TypeArray, nil
