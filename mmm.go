@@ -6,7 +6,6 @@
 package mmm
 
 import (
-	"encoding/binary"
 	"reflect"
 	"runtime"
 	"syscall"
@@ -30,9 +29,8 @@ type MemChunk struct {
 	chunkSize uintptr
 	objSize   uintptr
 
-	itf       interface{}
-	byteOrder binary.ByteOrder
-	bytes     []byte
+	arr   reflect.Value
+	bytes []byte
 }
 
 // NbObjects returns the number of objects in the chunk.
@@ -48,31 +46,8 @@ func (mc MemChunk) NbObjects() uint {
 // entirely up to you to decide how you want to manage thread-safety.
 //
 // This will panic if `i` is out of bounds.
-func (mc MemChunk) Read(i int) interface{} {
-	// build a zero-value interface similar to the original one
-	itf := reflect.Zero(reflect.ValueOf(mc.itf).Type()).Interface()
-	// get a pointer to the memory representation of the new interface
-	itfBytes := ((*[unsafe.Sizeof(itf)]byte)(unsafe.Pointer(&itf)))
-	// ignore the bytes of the interface that correspond to the data
-	ptrSize := unsafe.Sizeof(uintptr(0))
-	itfLen := uintptr(len(itfBytes)) - ptrSize
-
-	// get a pointer to the data bytes corresponding to index `i`
-	dataPtr := uintptr(unsafe.Pointer(&(mc.bytes[uintptr(i)*mc.objSize])))
-
-	// replace the data bytes of the interface with the data at index `i`
-	switch ptrSize {
-	case unsafe.Sizeof(uint8(0)):
-		itfBytes[itfLen] = byte(dataPtr)
-	case unsafe.Sizeof(uint16(0)):
-		mc.byteOrder.PutUint16(itfBytes[itfLen:], uint16(dataPtr))
-	case unsafe.Sizeof(uint32(0)):
-		mc.byteOrder.PutUint32(itfBytes[itfLen:], uint32(dataPtr))
-	case unsafe.Sizeof(uint64(0)):
-		mc.byteOrder.PutUint64(itfBytes[itfLen:], uint64(dataPtr))
-	}
-
-	return itf
+func (mc *MemChunk) Read(i int) interface{} {
+	return mc.arr.Index(i).Interface()
 }
 
 // Write writes the passed value to the i-th object of the chunk.
@@ -86,7 +61,7 @@ func (mc MemChunk) Read(i int) interface{} {
 // the other objects in the chunk. Or if anything went wrong.
 func (mc *MemChunk) Write(i int, v interface{}) interface{} {
 	// panic if `v` is of a different type
-	if reflect.TypeOf(v) != reflect.TypeOf(mc.itf) {
+	if reflect.TypeOf(v) != mc.arr.Type().Elem() {
 		panic("illegal value")
 	}
 	// copies `v`'s byte representation to index `i`
@@ -129,7 +104,8 @@ func NewMemChunk(v interface{}, n uint) (MemChunk, error) {
 		return MemChunk{}, Error("`n` must be > 0")
 	}
 
-	size := reflect.ValueOf(v).Type().Size()
+	t := reflect.TypeOf(v)
+	size := t.Size()
 	bytes, err := syscall.Mmap(
 		0, 0, int(size*uintptr(n)),
 		syscall.PROT_READ|syscall.PROT_WRITE,
@@ -139,19 +115,22 @@ func NewMemChunk(v interface{}, n uint) (MemChunk, error) {
 		return MemChunk{}, err
 	}
 
-	for i := uint(0); i < n; i++ {
-		if err := BytesOf(v, bytes[i*uint(size):]); err != nil {
+	for i := uintptr(0); i < uintptr(n); i++ {
+		if err := BytesOf(v, bytes[i*size:]); err != nil {
 			return MemChunk{}, err
 		}
 	}
+
+	// create an array of type v, backed by the mmap'd memory
+	arr := reflect.Zero(reflect.ArrayOf(int(n), t)).Interface()
+	(*[2]uintptr)(unsafe.Pointer(&arr))[1] = uintptr(unsafe.Pointer(&bytes[0]))
 
 	ret := MemChunk{
 		chunkSize: size * uintptr(n),
 		objSize:   size,
 
-		itf:       v,
-		byteOrder: Endianness(),
-		bytes:     bytes,
+		arr:   reflect.ValueOf(arr),
+		bytes: bytes,
 	}
 
 	runtime.SetFinalizer(&ret, func(chunk *MemChunk) {
@@ -175,17 +154,4 @@ func (mc *MemChunk) Delete() error {
 	mc.bytes = nil
 
 	return nil
-}
-
-// -----------------------------------------------------------------------------
-
-// Endianness returns the byte order of the current architecture.
-func Endianness() binary.ByteOrder {
-	var byteOrder binary.ByteOrder = binary.LittleEndian
-	var i int = 0x1
-	if ((*[unsafe.Sizeof(uintptr(0))]byte)(unsafe.Pointer(&i)))[0] == 0 {
-		byteOrder = binary.BigEndian
-	}
-
-	return byteOrder
 }
