@@ -56,31 +56,3 @@ func typeOf(v reflect.Value) (Type, error) {
 		return TypeInvalid, Error(fmt.Sprintf("unsuppported type: %#v", k.String()))
 	}
 }
-
-// TypeCheck recursively checks the underlying types of `v` and returns an error
-// if one or more of those types are illegal.
-func TypeCheck(v interface{}) error {
-	return typeCheck(reflect.ValueOf(v))
-}
-
-func typeCheck(v reflect.Value) error {
-	t, err := typeOf(v)
-	if err != nil {
-		return nil
-	}
-
-	if t == TypeArray && v.Len() > 0 {
-		return typeCheck(v.Index(0))
-	}
-
-	if t == TypeStruct {
-		fields := v.NumField()
-		for i := 0; i < fields; i++ {
-			if err := typeCheck(v.Field(i)); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
