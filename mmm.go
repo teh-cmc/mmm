@@ -29,7 +29,7 @@ type MemChunk struct {
 	chunkSize uintptr
 	objSize   uintptr
 
-	arr   reflect.Value
+	slice reflect.Value
 	bytes []byte
 }
 
@@ -47,7 +47,7 @@ func (mc MemChunk) NbObjects() uint {
 //
 // This will panic if `i` is out of bounds.
 func (mc *MemChunk) Read(i int) interface{} {
-	return mc.arr.Index(i).Interface()
+	return mc.slice.Index(i).Interface()
 }
 
 // Write writes the passed value to the i-th object of the chunk.
@@ -61,14 +61,11 @@ func (mc *MemChunk) Read(i int) interface{} {
 // the other objects in the chunk. Or if anything went wrong.
 func (mc *MemChunk) Write(i int, v interface{}) interface{} {
 	// panic if `v` is of a different type
-	if reflect.TypeOf(v) != mc.arr.Type().Elem() {
+	val := reflect.ValueOf(v)
+	if val.Type() != mc.slice.Type().Elem() {
 		panic("illegal value")
 	}
-	// copies `v`'s byte representation to index `i`
-	if err := BytesOf(v, mc.bytes[uintptr(i)*mc.objSize:]); err != nil {
-		panic(err)
-	}
-
+	mc.slice.Index(i).Set(val)
 	return v
 }
 
@@ -124,15 +121,21 @@ func NewMemChunk(v interface{}, n uint) (MemChunk, error) {
 		}
 	}
 
-	// create an array of type t, backed by the mmap'd memory
-	arr := reflect.Zero(reflect.ArrayOf(int(n), t)).Interface()
-	(*[2]uintptr)(unsafe.Pointer(&arr))[1] = uintptr(unsafe.Pointer(&bytes[0]))
+	// create a slice of type t, backed by the mmap'd memory
+	slice := reflect.MakeSlice(reflect.SliceOf(t), int(n), int(n)).Interface()
+	type sliceInternals struct {
+		data uintptr
+		_len uintptr
+		_cap uintptr
+	}
+	si := (*sliceInternals)((*[2]unsafe.Pointer)(unsafe.Pointer(&slice))[1])
+	si.data = uintptr(unsafe.Pointer(&bytes[0]))
 
 	ret := MemChunk{
 		chunkSize: size * uintptr(n),
 		objSize:   size,
 
-		arr:   reflect.ValueOf(arr),
+		slice: reflect.ValueOf(slice),
 		bytes: bytes,
 	}
 
