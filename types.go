@@ -29,18 +29,13 @@ const (
 )
 
 // TypeOf returns the underlying type of an interface.
-func TypeOf(v interface{}) (Type, error) {
-	return typeOf(reflect.ValueOf(v))
-}
-
-func typeOf(v reflect.Value) (Type, error) {
+func TypeOf(i interface{}) (Type, error) {
+	v := reflect.ValueOf(i)
 	if !v.IsValid() {
 		return TypeInvalid, Error(fmt.Sprintf("unsuppported type: %#v", v))
 	}
 
-	k := v.Type().Kind()
-
-	switch k {
+	switch k := v.Type().Kind(); k {
 	case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16,
 		reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16,
 		reflect.Uint32, reflect.Uint64, reflect.Uintptr, reflect.Float32,
