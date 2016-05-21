@@ -19,13 +19,13 @@ const (
 	// TypeInvalid is an illegal type.
 	TypeInvalid Type = iota
 	// TypeNumeric is any of bool/int/uint/float/complex and their variants.
-	TypeNumeric Type = iota
+	TypeNumeric
 	// TypeArray is an array of any underlying type.
-	TypeArray Type = iota
+	TypeArray
 	// TypeStruct is any struct.
-	TypeStruct Type = iota
+	TypeStruct
 	// TypeUnsafePointer is any pointer from the unsafe package.
-	TypeUnsafePointer Type = iota
+	TypeUnsafePointer
 )
 
 // TypeOf returns the underlying type of an interface.
