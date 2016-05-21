@@ -8,6 +8,8 @@ package mmm
 import (
 	"fmt"
 	"log"
+	"runtime"
+	"testing"
 	"unsafe"
 )
 
@@ -51,4 +53,58 @@ func Example_simple_usage() {
 	// {42 42}
 	// {17 2}
 	// {42 42}
+}
+
+// TestNewMemChunk tests the NewMemChunk function.
+func TestNewMemChunk(t *testing.T) {
+	// can't create 0-length chunk
+	_, err := NewMemChunk(nil, 0)
+	if err.Error() != "`n` must be > 0" {
+		t.Error("expected length error, got", err)
+	}
+
+	types := []interface{}{
+		// interface
+		interface{}(0),
+		// boolean
+		false,
+		// numeric
+		byte(0),
+		int(0),
+		uint(0),
+		uintptr(0),
+		// array
+		[3]int{},
+		// unsafe pointer
+		unsafe.Pointer(new(int)),
+	}
+	for _, typ := range types {
+		// create chunk of type
+		mc, err := NewMemChunk(typ, 1)
+		if err != nil {
+			t.Fatal(err)
+		}
+		// Read should produce input value
+		if mc.Read(0) != typ {
+			t.Error(typ)
+		}
+		mc.Delete()
+	}
+
+	invalidTypes := []interface{}{
+		// nil pointer
+		nil,
+		// non-nil pointer
+		new(int),
+	}
+	for _, typ := range invalidTypes {
+		// create chunk of type
+		_, err := NewMemChunk(typ, 1)
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+	}
+
+	// run GC cycle; finalizers should run
+	runtime.GC()
 }
