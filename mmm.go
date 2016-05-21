@@ -6,6 +6,7 @@
 package mmm
 
 import (
+	"fmt"
 	"reflect"
 	"runtime"
 	"syscall"
@@ -20,6 +21,27 @@ type Error string
 // Error implements the built-in error interface.
 func (e Error) Error() string {
 	return string(e)
+}
+
+// -----------------------------------------------------------------------------
+
+// TypeCheck recursively checks the underlying types of `v` and returns an error
+// if one or more of those types are illegal.
+func TypeCheck(i interface{}) error {
+	v := reflect.ValueOf(i)
+	if !v.IsValid() {
+		return Error(fmt.Sprintf("unsuppported type: %#v", v))
+	}
+	k := v.Type().Kind()
+	switch k {
+	case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16,
+		reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16,
+		reflect.Uint32, reflect.Uint64, reflect.Uintptr, reflect.Float32,
+		reflect.Float64, reflect.Complex64, reflect.Complex128, reflect.Array,
+		reflect.Struct, reflect.UnsafePointer:
+		return nil
+	}
+	return Error(fmt.Sprintf("unsuppported type: %#v", k.String()))
 }
 
 // -----------------------------------------------------------------------------
@@ -100,7 +122,7 @@ func NewMemChunk(v interface{}, n uint) (MemChunk, error) {
 	if n == 0 {
 		return MemChunk{}, Error("`n` must be > 0")
 	}
-	if _, err := TypeOf(v); err != nil {
+	if err := TypeCheck(v); err != nil {
 		return MemChunk{}, err
 	}
 
