@@ -22,10 +22,6 @@ import (
 // unsafe.Pointer,
 // and any possible combination of the above.
 func BytesOf(v interface{}, bytes []byte) error {
-	return bytesOf(v, bytes)
-}
-
-func bytesOf(v interface{}, bytes []byte) error {
 	t, err := TypeOf(v)
 	if err != nil {
 		return err
