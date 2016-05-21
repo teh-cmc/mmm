@@ -103,6 +103,9 @@ func NewMemChunk(v interface{}, n uint) (MemChunk, error) {
 	if n == 0 {
 		return MemChunk{}, Error("`n` must be > 0")
 	}
+	if _, err := TypeOf(v); err != nil {
+		return MemChunk{}, err
+	}
 
 	t := reflect.TypeOf(v)
 	size := t.Size()
@@ -121,7 +124,7 @@ func NewMemChunk(v interface{}, n uint) (MemChunk, error) {
 		}
 	}
 
-	// create an array of type v, backed by the mmap'd memory
+	// create an array of type t, backed by the mmap'd memory
 	arr := reflect.Zero(reflect.ArrayOf(int(n), t)).Interface()
 	(*[2]uintptr)(unsafe.Pointer(&arr))[1] = uintptr(unsafe.Pointer(&bytes[0]))
 
@@ -133,6 +136,8 @@ func NewMemChunk(v interface{}, n uint) (MemChunk, error) {
 		bytes: bytes,
 	}
 
+	// set a finalizer to free the chunk's memory when it would normally be
+	// garbage collected
 	runtime.SetFinalizer(&ret, func(chunk *MemChunk) {
 		if chunk.bytes != nil {
 			chunk.Delete()
