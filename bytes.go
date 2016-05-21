@@ -33,35 +33,24 @@ func bytesOf(v interface{}, bytes []byte) error {
 
 	switch t {
 	case TypeNumeric, TypeArray, TypeStruct:
-		return bytesOfArrayType(v, bytes)
+		// First extract v's data pointer and determine its size.
+		vuintptr := (*[2]uintptr)(unsafe.Pointer(&v))[1]
+		size := reflect.TypeOf(v).Size()
+
+		// Construct a "fake slice" using the data pointer and size. This object's
+		// memory layout will match that of []byte.
+		slice := struct {
+			data uintptr
+			_len uintptr
+			_cap uintptr
+		}{vuintptr, size, size}
+
+		// Convert the fake slice to a real byte slice and copy it.
+		copy(bytes, *(*[]byte)(unsafe.Pointer(&slice)))
+
 	case TypeUnsafePointer:
 		// do nothing
 	}
-
-	return nil
-}
-
-// -----------------------------------------------------------------------------
-
-func bytesOfArrayType(v interface{}, bytes []byte) error {
-	if err := TypeCheck(v); err != nil {
-		return err
-	}
-
-	// First extract v's data pointer and determine its size.
-	vuintptr := (*[2]uintptr)(unsafe.Pointer(&v))[1]
-	size := reflect.TypeOf(v).Size()
-
-	// Construct a "fake slice" using the data pointer and size. This object's
-	// memory layout will match that of []byte.
-	slice := struct {
-		data uintptr
-		_len uintptr
-		_cap uintptr
-	}{vuintptr, size, size}
-
-	// Convert the fake slice to a real byte slice and copy it.
-	copy(bytes, *(*[]byte)(unsafe.Pointer(&slice)))
 
 	return nil
 }
