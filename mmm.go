@@ -139,13 +139,8 @@ func NewMemChunk(v interface{}, n uint) (MemChunk, error) {
 
 	// create a slice of type t, backed by the mmap'd memory
 	itf := reflect.MakeSlice(reflect.SliceOf(t), int(n), int(n)).Interface()
-	type sliceInternals struct {
-		data uintptr
-		_len uintptr
-		_cap uintptr
-	}
-	si := (*sliceInternals)((*[2]unsafe.Pointer)(unsafe.Pointer(&itf))[1])
-	si.data = uintptr(unsafe.Pointer(&bytes[0]))
+	si := (*reflect.SliceHeader)((*[2]unsafe.Pointer)(unsafe.Pointer(&itf))[1])
+	si.Data = uintptr(unsafe.Pointer(&bytes[0]))
 
 	// fill slice with copies of v
 	slice := reflect.ValueOf(itf)
