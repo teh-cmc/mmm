@@ -32,16 +32,28 @@ func TypeCheck(i interface{}) error {
 	if !v.IsValid() {
 		return Error(fmt.Sprintf("unsuppported type: %#v", v))
 	}
-	k := v.Type().Kind()
-	switch k {
+	return typeCheck(v.Type())
+}
+
+func typeCheck(t reflect.Type) error {
+	switch k := t.Kind(); k {
 	case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16,
 		reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16,
 		reflect.Uint32, reflect.Uint64, reflect.Uintptr, reflect.Float32,
-		reflect.Float64, reflect.Complex64, reflect.Complex128, reflect.Array,
-		reflect.Struct, reflect.UnsafePointer:
+		reflect.Float64, reflect.Complex64, reflect.Complex128, reflect.UnsafePointer:
 		return nil
+	case reflect.Array:
+		return typeCheck(t.Elem())
+	case reflect.Struct:
+		for i := 0; i < t.NumField(); i++ {
+			if err := typeCheck(t.Field(i).Type); err != nil {
+				return err
+			}
+		}
+		return nil
+	default:
+		return Error(fmt.Sprintf("unsuppported type: %#v", k.String()))
 	}
-	return Error(fmt.Sprintf("unsuppported type: %#v", k.String()))
 }
 
 // -----------------------------------------------------------------------------

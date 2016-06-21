@@ -96,6 +96,15 @@ func TestNewMemChunk(t *testing.T) {
 		nil,
 		// non-nil pointer
 		new(int),
+		// slice
+		[]int{},
+		// array of invalid type
+		[3]*int{},
+		// struct with invalid type
+		struct {
+			valid   int
+			invalid *int
+		}{},
 	}
 	for _, typ := range invalidTypes {
 		// create chunk of type
