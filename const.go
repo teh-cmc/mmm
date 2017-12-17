@@ -2,8 +2,8 @@
 
 package mmm
 
-import "syscall"
+import "golang.org/x/sys/unix"
 
 const (
-	mmapFlags = syscall.MAP_PRIVATE | syscall.MAP_ANONYMOUS
+	mmapFlags = unix.MAP_PRIVATE | unix.MAP_ANONYMOUS
 )
