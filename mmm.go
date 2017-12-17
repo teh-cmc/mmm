@@ -9,8 +9,9 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
-	"syscall"
 	"unsafe"
+
+	"golang.org/x/sys/unix"
 )
 
 // -----------------------------------------------------------------------------
@@ -140,9 +141,9 @@ func NewMemChunk(v interface{}, n uint) (MemChunk, error) {
 
 	t := reflect.TypeOf(v)
 	size := t.Size()
-	bytes, err := syscall.Mmap(
+	bytes, err := unix.Mmap(
 		0, 0, int(size*uintptr(n)),
-		syscall.PROT_READ|syscall.PROT_WRITE,
+		unix.PROT_READ|unix.PROT_WRITE,
 		mmapFlags,
 	)
 	if err != nil {
@@ -181,7 +182,7 @@ func NewMemChunk(v interface{}, n uint) (MemChunk, error) {
 
 // Delete frees the memory chunk.
 func (mc *MemChunk) Delete() error {
-	err := syscall.Munmap(mc.bytes)
+	err := unix.Munmap(mc.bytes)
 	if err != nil {
 		return err
 	}
